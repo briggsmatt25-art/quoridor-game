@@ -21,7 +21,7 @@ function saveScores(scores) {
 export default function Game() {
   const [gameState, setGameState] = useState(createInitialState);
   const [scores, setScores] = useState(loadScores);
-  const [showTurnScreen, setShowTurnScreen] = useState(true);
+  const [showTurnScreen, setShowTurnScreen] = useState(false);
   const [prevPlayer, setPrevPlayer] = useState(null);
 
   useEffect(() => {
@@ -43,7 +43,7 @@ export default function Game() {
       }
 
       setPrevPlayer(prev.currentPlayer);
-      setShowTurnScreen(true);
+      //setShowTurnScreen(false);
       return next;
     });
   }, []);
@@ -54,7 +54,7 @@ export default function Game() {
       if (!next) return prev;
 
       setPrevPlayer(prev.currentPlayer);
-      setShowTurnScreen(true);
+      //setShowTurnScreen(false);
       return next;
     });
   }, []);
@@ -69,7 +69,7 @@ export default function Game() {
 
   const handlePlayAgain = useCallback(() => {
     setGameState(createInitialState());
-    setShowTurnScreen(true);
+    setShowTurnScreen(false);
     setPrevPlayer(null);
   }, []);
 
