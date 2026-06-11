@@ -3,7 +3,6 @@ import { createInitialState, movePlayer, placeWall } from "@/lib/quoridorLogic";
 import WallTray from "@/components/quoridor/WallTray";
 import Board from "@/components/quoridor/Board";
 import PlayerInfo from "@/components/quoridor/PlayerInfo";
-import Controls from "@/components/quoridor/Controls";
 import TurnScreen from "@/components/quoridor/TurnScreen";
 import WinnerScreen from "@/components/quoridor/WinnerScreen";
 
@@ -132,15 +131,14 @@ export default function Game() {
           score={scores[gameState.currentPlayer]}
         />
       </div>
+      <WallTray
+  wallsRemaining={gameState.wallsRemaining}
+  currentPlayer={gameState.currentPlayer}
+  onDragStart={setDragOrientation}
+  onTouchStart={handleTouchStartOnTray}
+/>
 
-      <div className="mt-4">
-        <Controls
-          state={gameState}
-          onSetMode={handleSetMode}
-          onSetOrientation={handleSetOrientation}
-          onResetScores={handleResetScores}
-        />
-      </div>
+      
     </div>
   );
 }
