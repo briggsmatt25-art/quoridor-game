@@ -20,90 +20,72 @@ export default function Board({ state, flipped, onCellClick, onWallDrop }) {
   const isValidMove = (r, c) =>
     validMoves.some((m) => m.row === r && m.col === c);
 
-  const hasHWall = (lr, lc) =>
-    state.walls.some(
-      (w) =>
-        w.orientation === "h" &&
-        w.row === lr &&
-        (w.col === lc || w.col === lc - 1)
-    );
-
-  const hasVWall = (lr, lc) =>
-    state.walls.some(
-      (w) =>
-        w.orientation === "v" &&
-        w.col === lc &&
-        (w.row === lr || w.row === lr - 1)
-    );
-
-  const placeWallFromClick = (row, col, orientation) => {
-    if (state.mode !== "wall") return;
-    if (state.wallOrientation !== orientation) return;
-    if (!isValidWallPlacement(state, row, col, orientation)) return;
-
-    onWallDrop(row, col, orientation);
-  };
-
   const tracks = [];
+
   for (let i = 0; i < BOARD_SIZE; i++) {
     tracks.push("1fr");
     if (i < BOARD_SIZE - 1) tracks.push("10px");
   }
 
-  const tpl = tracks.join(" ");
+  const template = tracks.join(" ");
 
   const cells = [];
+
   for (let dr = 0; dr < BOARD_SIZE; dr++) {
     for (let dc = 0; dc < BOARD_SIZE; dc++) {
       const [lr, lc] = toLogic(dr, dc);
 
-      const isP1 = state.players[0].row === lr && state.players[0].col === lc;
-      const isP2 = state.players[1].row === lr && state.players[1].col === lc;
+      const isP1 =
+        state.players[0].row === lr &&
+        state.players[0].col === lc;
+
+      const isP2 =
+        state.players[1].row === lr &&
+        state.players[1].col === lc;
 
       const canMove =
-        state.mode === "move" && isValidMove(lr, lc) && !state.winner;
+        state.mode === "move" &&
+        isValidMove(lr, lc);
 
       cells.push(
         <div
-          key={`c-${dr}-${dc}`}
+          key={`cell-${dr}-${dc}`}
           onClick={() => canMove && onCellClick(lr, lc)}
           style={{
             gridRow: dr * 2 + 1,
             gridColumn: dc * 2 + 1,
-            background: canMove ? "rgba(74,222,128,0.4)" : CELL_BASE(dr, dc),
-            boxShadow: canMove
-              ? "inset 0 0 0 2px rgba(34,197,94,0.8)"
-              : "inset 0 0 0 0.5px rgba(0,0,0,0.12)",
+            background: canMove
+              ? "rgba(34,197,94,0.25)"
+              : CELL_BASE(dr, dc),
             cursor: canMove ? "pointer" : "default",
             display: "flex",
-            alignItems: "center",
             justifyContent: "center",
+            alignItems: "center",
             position: "relative",
           }}
         >
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              pointerEvents: "none",
-              background:
-                "repeating-linear-gradient(89deg, transparent, transparent 5px, rgba(0,0,0,0.03) 5px, rgba(0,0,0,0.03) 6px)",
-            }}
-          />
-
-          {isP1 && <PawnSVG color="#7c2d12" highlight="#f97316" />}
-          {isP2 && <PawnSVG color="#0c4a6e" highlight="#38bdf8" />}
-
           {canMove && !isP1 && !isP2 && (
             <div
               style={{
                 width: 12,
                 height: 12,
                 borderRadius: "50%",
-                background: "rgba(34,197,94,0.65)",
-                border: "2px solid rgba(21,128,61,0.9)",
-                zIndex: 2,
+                background: "#22c55e",
               }}
+            />
+          )}
+
+          {isP1 && (
+            <PawnSVG
+              color="#7c2d12"
+              highlight="#f97316"
+            />
+          )}
+
+          {isP2 && (
+            <PawnSVG
+              color="#0c4a6e"
+              highlight="#38bdf8"
             />
           )}
         </div>
@@ -111,89 +93,89 @@ export default function Board({ state, flipped, onCellClick, onWallDrop }) {
     }
   }
 
-  const wallSlots = [];
+  const walls = [];
 
-  // Horizontal wall slots
-  for (let dr = 0; dr < BOARD_SIZE - 1; dr++) {
-    for (let dc = 0; dc < BOARD_SIZE - 1; dc++) {
-      const [lr1] = toLogic(dr, dc);
-      const [lr2] = toLogic(dr + 1, dc);
-      const lgr = Math.min(lr1, lr2);
-      const [, lgc] = toLogic(dr, dc);
-
-      const placed = hasHWall(lgr, lgc);
-      const canPlace =
-        state.mode === "wall" &&
-        state.wallOrientation === "h" &&
-        !placed &&
-        isValidWallPlacement(state, lgr, lgc, "h");
-
-      wallSlots.push(
+  state.walls.forEach((wall, index) => {
+    if (wall.orientation === "h") {
+      walls.push(
         <div
-          key={`h-${dr}-${dc}`}
-          onClick={() => placeWallFromClick(lgr, lgc, "h")}
+          key={`wall-h-${index}`}
           style={{
-            gridRow: dr * 2 + 2,
-            gridColumn: `${dc * 2 + 1} / span 3`,
-            background: placed
-              ? "linear-gradient(180deg,#f59e0b,#78350f,#f59e0b)"
-              : canPlace
-              ? "rgba(245,158,11,0.65)"
-              : "rgba(80,40,5,0.18)",
+            gridRow: wall.row * 2 + 2,
+            gridColumn: `${wall.col * 2 + 1} / ${wall.col * 2 + 4}`,
+            background:
+              "linear-gradient(180deg,#f59e0b,#78350f,#f59e0b)",
             borderRadius: 3,
-            boxShadow: placed
-              ? "0 1px 6px rgba(0,0,0,0.55)"
-              : canPlace
-              ? "inset 0 0 0 1px rgba(255,255,255,0.25)"
-              : "none",
-            cursor: canPlace ? "pointer" : "default",
-            zIndex: placed || canPlace ? 5 : 1,
+            zIndex: 10,
           }}
-          title={canPlace ? "Place horizontal wall" : ""}
         />
       );
     }
-  }
 
-  // Vertical wall slots
-  for (let dr = 0; dr < BOARD_SIZE - 1; dr++) {
-    for (let dc = 0; dc < BOARD_SIZE - 1; dc++) {
-      const [, lc1] = toLogic(dr, dc);
-      const [, lc2] = toLogic(dr, dc + 1);
-      const lgc = Math.min(lc1, lc2);
-      const [lgr] = toLogic(dr, dc);
-
-      const placed = hasVWall(lgr, lgc);
-      const canPlace =
-        state.mode === "wall" &&
-        state.wallOrientation === "v" &&
-        !placed &&
-        isValidWallPlacement(state, lgr, lgc, "v");
-
-      wallSlots.push(
+    if (wall.orientation === "v") {
+      walls.push(
         <div
-          key={`v-${dr}-${dc}`}
-          onClick={() => placeWallFromClick(lgr, lgc, "v")}
+          key={`wall-v-${index}`}
           style={{
-            gridRow: `${dr * 2 + 1} / span 3`,
-            gridColumn: dc * 2 + 2,
-            background: placed
-              ? "linear-gradient(90deg,#f59e0b,#78350f,#f59e0b)"
-              : canPlace
-              ? "rgba(245,158,11,0.65)"
-              : "rgba(80,40,5,0.18)",
+            gridColumn: wall.col * 2 + 2,
+            gridRow: `${wall.row * 2 + 1} / ${wall.row * 2 + 4}`,
+            background:
+              "linear-gradient(90deg,#f59e0b,#78350f,#f59e0b)",
             borderRadius: 3,
-            boxShadow: placed
-              ? "1px 0 6px rgba(0,0,0,0.55)"
-              : canPlace
-              ? "inset 0 0 0 1px rgba(255,255,255,0.25)"
-              : "none",
-            cursor: canPlace ? "pointer" : "default",
-            zIndex: placed || canPlace ? 5 : 1,
+            zIndex: 10,
           }}
-          title={canPlace ? "Place vertical wall" : ""}
         />
       );
+    }
+  });
+
+  const wallSlots = [];
+
+  if (state.mode === "wall") {
+    for (let row = 0; row < BOARD_SIZE - 1; row++) {
+      for (let col = 0; col < BOARD_SIZE - 1; col++) {
+        if (
+          state.wallOrientation === "h" &&
+          isValidWallPlacement(state, row, col, "h")
+        ) {
+          wallSlots.push(
+            <div
+              key={`slot-h-${row}-${col}`}
+              onClick={() =>
+                onWallDrop(row, col, "h")
+              }
+              style={{
+                gridRow: row * 2 + 2,
+                gridColumn: `${col * 2 + 1} / ${col * 2 + 4}`,
+                cursor: "pointer",
+                background: "transparent",
+                zIndex: 5,
+              }}
+            />
+          );
+        }
+
+        if (
+          state.wallOrientation === "v" &&
+          isValidWallPlacement(state, row, col, "v")
+        ) {
+          wallSlots.push(
+            <div
+              key={`slot-v-${row}-${col}`}
+              onClick={() =>
+                onWallDrop(row, col, "v")
+              }
+              style={{
+                gridColumn: col * 2 + 2,
+                gridRow: `${row * 2 + 1} / ${row * 2 + 4}`,
+                cursor: "pointer",
+                background: "transparent",
+                zIndex: 5,
+              }}
+            />
+          );
+        }
+      }
     }
   }
 
@@ -201,16 +183,13 @@ export default function Board({ state, flipped, onCellClick, onWallDrop }) {
     <div
       style={{
         width: "100%",
-        maxWidth: "min(84vw, 420px)",
-        aspectRatio: "1",
-        background:
-          "linear-gradient(135deg,#8B5E1A 0%,#a0722a 30%,#7a4f10 55%,#a0722a 80%,#8B5E1A 100%)",
-        borderRadius: 14,
+        maxWidth: 420,
+        aspectRatio: 1,
         padding: 8,
-        boxShadow:
-          "0 8px 32px rgba(60,30,5,0.5), inset 0 1px 0 rgba(255,220,150,0.25)",
+        borderRadius: 14,
         border: "3px solid #5c3610",
-        boxSizing: "border-box",
+        background:
+          "linear-gradient(135deg,#8B5E1A,#a0722a,#8B5E1A)",
       }}
     >
       <div
@@ -218,15 +197,15 @@ export default function Board({ state, flipped, onCellClick, onWallDrop }) {
           width: "100%",
           height: "100%",
           display: "grid",
-          gridTemplateColumns: tpl,
-          gridTemplateRows: tpl,
-          borderRadius: 8,
+          gridTemplateColumns: template,
+          gridTemplateRows: template,
           overflow: "hidden",
-          position: "relative",
+          borderRadius: 8,
         }}
       >
         {cells}
         {wallSlots}
+        {walls}
       </div>
     </div>
   );
