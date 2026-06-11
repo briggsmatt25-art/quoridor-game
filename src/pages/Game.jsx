@@ -120,6 +120,7 @@ export default function Game() {
         flipped={flipped}
         onCellClick={handleCellClick}
         onWallDrop={handleWallDrop}
+        dragOrientation={gameState.wallOrientation}
       />
 
       <div className="w-full max-w-md space-y-2 mt-4">
