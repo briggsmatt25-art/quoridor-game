@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { createInitialState, movePlayer, placeWall } from "@/lib/quoridorLogic";
+import WallTray from "@/components/quoridor/WallTray";
 import Board from "@/components/quoridor/Board";
 import PlayerInfo from "@/components/quoridor/PlayerInfo";
 import Controls from "@/components/quoridor/Controls";
